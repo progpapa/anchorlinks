@@ -1,0 +1,29 @@
+<?php
+/**
+ * @file
+ * Install, update, and uninstall functions for the pageanchors module.
+ */
+
+/**
+ * Implements hook_field_schema().
+ */
+function anchorlinks_field_schema($field) {
+  return array(
+    'columns' => array(
+      'link_text' => array(
+        'type' => 'varchar',
+        'length' => 127,
+        'not null' => FALSE,
+      ),
+      'link_url' => array(
+        'type' => 'varchar',
+        'length' => 127,
+        'not null' => FALSE,
+      ),
+    ),
+    'indexes' => array(
+      'link_text' => array('link_text'),
+      'link_url' => array('link_url'),
+    ),
+  );
+} // anchorlinks_field_schema

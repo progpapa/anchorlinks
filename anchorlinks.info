@@ -1,0 +1,11 @@
+name = Anchor links
+description = Defines a field type to enter anchor links.
+package = Field
+core = 7.x
+
+
+; Information added by drush on 2014-04-22
+version = "master-dev"
+project = "anchorlinks"
+datestamp = "1398157726"
+

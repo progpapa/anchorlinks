@@ -1,0 +1,151 @@
+<?php
+/**
+ * @file
+ * Defines a field type that allows to enter a list of anchor links.
+ */
+
+/**
+ * Implements hook_field_info().
+ */
+function anchorlinks_field_info() {
+  return array(
+    'anchorlinks' => array(
+      'label' => t('Anchor links'),
+      'description' => t('Create anchor links'),
+      'default_widget' => 'anchorlinks_simple',
+      'default_formatter' => 'anchorlinks_default',
+    ),
+  );
+} // anchorlinks_field_info()
+
+/**
+ * Implements hook_field_validate().
+ */
+function anchorlinks_field_validate($obj_type, $object, $field, $instance, $langcode, &$items, &$errors) {
+  foreach ($items as $delta => $item) {
+    // Check if both url and text is set or both is empty.
+    if (empty($item['link_url']) <> empty($item['link_text'])) {
+      $errors[$field['field_name']][$langcode][$delta][] = array(
+        'error' => 'anchorlinks_field_invalid',
+        'message' => t('Please enter both link text and url'),
+      );
+    } // if
+  } // foreach
+} // anchorlinks_field_validate
+
+/**
+ * Implements hook_field_is_empty().
+ */
+function anchorlinks_field_is_empty($item, $field) {
+  return empty($item['link_url']) && empty($item['link_text']);
+} // anchorlinks_field_is_empty
+
+/*
+ * Implements hook_field_formatter_info().
+ */
+function anchorlinks_field_formatter_info() {
+  return array(
+    'anchorlinks_default' => array(
+      'label' => t('Default formatter'),
+      'field types' => array('anchorlinks'),
+    ),
+  );
+} // anchorlinks_formatter_info
+
+/*
+ * Implements hook_field_formatter_view().
+ */
+function anchorlinks_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
+  $element = array();
+  switch ($display['type']) {
+    case 'anchorlinks_default':
+      foreach ($items as $delta => $item) {
+        $element[$delta] = array(
+          '#theme' => 'link',
+          '#text' => $item['link_text'],
+          '#path' => '',
+          '#options' => array(
+            'attributes' => array(), //REQUIRED
+            'fragment' => $item['link_url'],
+            'html' => FALSE, //REQUIRED
+            'external' => TRUE,
+          ),
+          '#prefix' => '<div id="' . $item['link_url'] . 'Btn">',
+          '#suffix' => '</div>',
+        );
+      } // foreach
+      break;
+  } // switch
+
+  drupal_add_js(drupal_get_path('module', 'anchorlinks') .'/js/scrolld.min.js',
+      array(
+        'type' => 'file',
+        'scope' => 'footer',
+      )
+  );
+  drupal_add_js(drupal_get_path('module', 'anchorlinks') .'/js/anchorlinks.js',
+      array(
+        'type' => 'file',
+        'scope' => 'footer',
+      )
+  );
+
+  return $element;
+} // anchorlinks_field_formatter_view
+
+/**
+ * Implements hook_field_widget_info().
+ */
+function anchorlinks_field_widget_info() {
+  return array(
+    'anchorlinks_default' => array(
+      'label' => t('Anchor links default widget'),
+      'field types' => array('anchorlinks'),
+      'behaviors' => array(
+        'multiple values' => FIELD_BEHAVIOR_DEFAULT,
+        'default value' => FIELD_BEHAVIOR_NONE,
+      ),
+    ),
+  );
+} // anchorlinks_field_widget_info
+
+/**
+ * Implements hook_field_widget_form().
+ */
+function anchorlinks_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
+  $element += array(
+    '#type' => 'fieldset',
+    '#delta' => $delta,
+  );
+  $element['link_text'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Anchor text'),
+    '#size' => 40,
+    '#maxlength' => 100,
+    '#weight' => 0,
+    '#default_value' => isset($items[$delta]['link_text'])
+                        ? $items[$delta]['link_text'] : '',
+  );
+  $element['link_url'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Anchor URL'),
+    '#size' => 40,
+    '#maxlength' => 100,
+    '#weight' => 1,
+    '#field_prefix' => '#',
+    '#default_value' => isset($items[$delta]['link_url'])
+                        ? $items[$delta]['link_url'] : '',
+  );
+  return $element;
+} // anchorlinks_field_widget_form
+
+/*
+ * Implements hook_field_widget_error().
+ */
+function anchorlinks_field_widget_error($element, $error, $form, &$form_state) {
+  switch ($error['error']) {
+    case 'anchorlinks_field_invalid':
+      form_error($element, $error['message']);
+      break;
+  } // switch
+} // anchorlinks_field_widget_error
